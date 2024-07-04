@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class TicTacToeGameManager : MonoBehaviour
 {
@@ -10,13 +11,32 @@ public class TicTacToeGameManager : MonoBehaviour
     public Button[] gridButtons;
     public GameObject[] strikeouts;
     public Button resetButton;
+    public Button endButton;
 
     private string currentPlayer = "X";
     private string[] gridState = new string[9];
-    private bool isPlayingWithAI = true; // Set to true if playing with AI
+    private bool isPlayingWithAI;
+    private string AIPlayer;
 
     void Start()
     {
+        // Check PlayerPrefs for game mode
+        string gameMode = PlayerPrefs.GetString("GameMode");
+        if (gameMode == "AIAsX")
+        {
+            isPlayingWithAI = true;
+            AIPlayer = "X";
+        }
+        else if (gameMode == "AIAsO")
+        {
+            isPlayingWithAI = true;
+            AIPlayer = "O";
+        }
+        else
+        {
+            isPlayingWithAI = false;
+        }
+
         ResetGame();
 
         // Add listeners for the grid buttons
@@ -27,6 +47,9 @@ public class TicTacToeGameManager : MonoBehaviour
 
         // Add listener for the reset button
         resetButton.onClick.AddListener(ResetGame);
+
+        // Add listener for the end button
+        endButton.onClick.AddListener(EndGame);
     }
 
     void OnGridButtonClick(Button button)
@@ -35,7 +58,8 @@ public class TicTacToeGameManager : MonoBehaviour
         if (gridState[index] == "")
         {
             MakeMove(index);
-            if (isPlayingWithAI && currentPlayer == "O")
+
+            if (isPlayingWithAI && currentPlayer == AIPlayer)
             {
                 StartCoroutine(DelayAIMove());
             }
@@ -155,9 +179,14 @@ public class TicTacToeGameManager : MonoBehaviour
 
         resetButton.gameObject.SetActive(false);
 
-        if (isPlayingWithAI && currentPlayer == "O")
+        if (isPlayingWithAI && currentPlayer == AIPlayer)
         {
-            MakeAIMove();
+            StartCoroutine(DelayAIMove());
         }
+    }
+
+    void EndGame()
+    {
+        SceneManager.LoadScene("Intro");
     }
 }
